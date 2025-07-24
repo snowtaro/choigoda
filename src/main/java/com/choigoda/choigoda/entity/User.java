@@ -1,12 +1,14 @@
 package com.choigoda.choigoda.entity;
 
+import jakarta.persistence.Id;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.jpa.repository.JpaRepository;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Optional;
-
+@Getter
+@Setter
 @Entity
 public class User {
     @Id

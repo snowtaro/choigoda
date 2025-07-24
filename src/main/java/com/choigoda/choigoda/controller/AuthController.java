@@ -1,46 +1,70 @@
 package com.choigoda.choigoda.controller;
 
-import com.choigoda.choigoda.dto.LoginDto;
-import com.choigoda.choigoda.dto.SignupDto;
-import com.choigoda.choigoda.repository.UserRepository;
-import com.choigoda.choigoda.security.JwtTokenProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import com.choigoda.choigoda.security.JwtTokenProvider;
+import com.choigoda.choigoda.entity.User;
+import com.choigoda.choigoda.repository.UserRepository;
+import com.choigoda.choigoda.dto.AuthRequest;
+import com.choigoda.choigoda.dto.RegisterRequest;
+import com.choigoda.choigoda.dto.AuthResponse;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
-    private AuthenticationManager authManager;
-    @Autowired private JwtTokenProvider jwtProvider;
-    @Autowired private UserRepository userRepo;
-    @Autowired private PasswordEncoder encoder;
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupDto dto) {
-        if (userRepo.findByUsername(dto.getUsername()).isPresent()) { ... }
-        User u = new User();
-        u.setUsername(dto.getUsername());
-        u.setPassword(encoder.encode(dto.getPassword()));
-        userRepo.save(u);
-        return ResponseEntity.ok("Registered");
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            JwtTokenProvider jwtTokenProvider,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
+    /** 로그인 **/
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDto dto) {
-        Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
-        String token = jwtProvider.createToken(auth);
-        return ResponseEntity.ok(Map.of("accessToken", token, "tokenType", "Bearer"));
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        // 1) 아이디/비밀번호로 인증 시도
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+        // 2) 인증이 성공하면 JWT 토큰 생성
+        String token = jwtTokenProvider.createToken(auth);
+        // 3) 토큰을 클라이언트에 반환
+        return ResponseEntity.ok(new AuthResponse(token));
+    }
+
+    /** 회원가입 **/
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+        // 이미 가입된 사용자명인지 체크
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("이미 사용 중인 사용자명입니다.");
+        }
+        // 사용자 엔티티 생성 및 저장
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+        return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 }
