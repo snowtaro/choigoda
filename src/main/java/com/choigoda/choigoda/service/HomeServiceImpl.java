@@ -2,7 +2,7 @@ package com.choigoda.choigoda.service;
 
 import com.choigoda.choigoda.dto.HomeResponseDto;
 import com.choigoda.choigoda.entity.User;
-import com.choigoda.choigoda.repo.UserRepository;
+import com.choigoda.choigoda.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +18,6 @@ public class HomeServiceImpl implements HomeService {
     public HomeResponseDto getHomeInfo() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다."));
-        return new HomeResponseDto(email, user.getName(), "안녕하세요");
+        return new HomeResponseDto(email, user.getUsername(), "안녕하세요");
     }
 }

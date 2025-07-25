@@ -5,12 +5,12 @@ import lombok.Getter;
 @Getter
 public class HomeResponseDto {
     private String email;
-    private String name;
+    private String username;
     private String message;
 
-    public HomeResponseDto(String email, String name, String message) {
+    public HomeResponseDto(String email, String username, String message) {
         this.email = email;
-        this.name = name;
+        this.username = username;
         this.message = message;
     }
 }
