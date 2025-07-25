@@ -148,11 +148,15 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-            if (!res.ok) throw new Error('로그인 실패');
-            const { token } = await res.json();
+            const data = await res.json();
+            if (!res.ok) {
+                // 서버에서 던진 error 필드가 있으면 그걸, 없으면 기본 메시지
+                throw new Error(data.error || '로그인 실패');
+            }
+            const { token } = data;
             localStorage.setItem('jwt', token);
             showMessage('로그인 성공! JWT를 저장했습니다.', false);
-            // TODO: 로그인 후 리다이렉트할 경우 window.location.href = '/dashboard';
+            window.location.href = '/home'
         } catch (err) {
             showMessage(err.message);
         }

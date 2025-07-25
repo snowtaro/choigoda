@@ -21,22 +21,32 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private JwtTokenProvider jwtTokenProvider;
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
-            throws ServletException, IOException {
-        String path = request.getRequestURI();
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // 1) /api/** 가 아니면 전부 스킵
+        if (!path.startsWith("/api/")) {
+            return true;
+        }
+        // 2) /api/auth/** (로그인·회원가입)도 스킵
         if (path.startsWith("/api/auth/")) {
-            filterChain.doFilter(request, response);
+            return true;
+        }
+        // 나머지 /api/** 요청만 필터 적용
+        return false;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+        String token = jwtTokenProvider.resolveToken(request);
+        if (token == null || !jwtTokenProvider.validateToken(token)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "유효하지 않은 JWT");
             return;
         }
-        String token = jwtTokenProvider.resolveToken(request);
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            Authentication auth = jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-        }
-
+        SecurityContextHolder.getContext()
+                .setAuthentication(jwtTokenProvider.getAuthentication(token));
         filterChain.doFilter(request, response);
     }
 }
