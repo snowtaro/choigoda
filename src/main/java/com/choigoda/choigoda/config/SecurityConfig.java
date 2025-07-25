@@ -36,7 +36,13 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/",                      // 루트
+                                "/index.html",            // 인덱스 페이지
+                                "/css/**", "/js/**",      // 정적 리소스
+                                "/images/**", "/favicon.ico",
+                                "/api/auth/**"            // 로그인/회원가입 API
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);

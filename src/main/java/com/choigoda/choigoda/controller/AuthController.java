@@ -34,6 +34,10 @@ public class AuthController {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
+    @GetMapping("/login")
+    public String login(){
+        return "index";
+    }
 
     /** 로그인 **/
     @PostMapping("/login")

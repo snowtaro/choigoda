@@ -168,4 +168,18 @@
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                bod
+                body: JSON.stringify({ username, password }) // ← 여기 오타 수정
+            });
+
+            if (!res.ok) {
+                const errText = await res.text(); // 서버에서 에러 메시지 받기
+                throw new Error(errText || '회원가입 실패');
+            }
+
+            showMessage('회원가입 성공! 이제 로그인하세요.', false);
+            toggleForms(); // 로그인 폼으로 전환
+        } catch (err) {
+            showMessage(err.message);
+        }
+    });
+</script>
