@@ -1,0 +1,189 @@
+<!-- src/main/resources/static/index.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Choigoda 인증</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 320px;
+        }
+        .card h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            box-sizing: border-box;
+        }
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background: #007bff;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .toggle {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .toggle a {
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .hidden {
+            display: none;
+        }
+        .message {
+            margin-bottom: 1rem;
+            color: red;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2 id="form-title">로그인</h2>
+
+    <div class="message" id="message"></div>
+
+    <!-- 로그인 폼 -->
+    <form id="login-form">
+        <div class="form-group">
+            <label for="login-username">아이디</label>
+            <input type="text" id="login-username" required />
+        </div>
+        <div class="form-group">
+            <label for="login-password">비밀번호</label>
+            <input type="password" id="login-password" required />
+        </div>
+        <button type="submit" class="btn">로그인</button>
+    </form>
+
+    <!-- 회원가입 폼 -->
+    <form id="register-form" class="hidden">
+        <div class="form-group">
+            <label for="reg-username">아이디</label>
+            <input type="text" id="reg-username" required />
+        </div>
+        <div class="form-group">
+            <label for="reg-password">비밀번호</label>
+            <input type="password" id="reg-password" required />
+        </div>
+        <button type="submit" class="btn">회원가입</button>
+    </form>
+
+    <div class="toggle">
+        <span id="to-register">아직 계정이 없으신가요? <a>회원가입</a></span>
+        <span id="to-login" class="hidden">이미 가입하셨나요? <a>로그인</a></span>
+    </div>
+</div>
+
+<script>
+    const loginForm     = document.getElementById('login-form');
+    const registerForm  = document.getElementById('register-form');
+    const formTitle     = document.getElementById('form-title');
+    const msgBox        = document.getElementById('message');
+    const toRegister    = document.getElementById('to-register');
+    const toLogin       = document.getElementById('to-login');
+
+    // 폼 전환 함수
+    function toggleForms() {
+        const isLogin = !loginForm.classList.contains('hidden');
+        loginForm.classList.toggle('hidden');
+        registerForm.classList.toggle('hidden');
+        toRegister.classList.toggle('hidden');
+        toLogin.classList.toggle('hidden');
+        formTitle.textContent = isLogin ? '회원가입' : '로그인';
+        msgBox.textContent = '';
+    }
+
+    toRegister.querySelector('a').addEventListener('click', toggleForms);
+    toLogin.querySelector('a').addEventListener('click', toggleForms);
+
+    // 에러/성공 메시지 출력
+    function showMessage(text, isError = true) {
+        msgBox.style.color = isError ? 'red' : 'green';
+        msgBox.textContent = text;
+    }
+
+    // 로그인 처리
+    loginForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                // 서버에서 던진 error 필드가 있으면 그걸, 없으면 기본 메시지
+                throw new Error(data.error || '로그인 실패');
+            }
+            const { token } = data;
+            localStorage.setItem('jwt', token);
+            showMessage('로그인 성공! JWT를 저장했습니다.', false);
+            window.location.href = '/home'
+        } catch (err) {
+            showMessage(err.message);
+        }
+    });
+
+    // 회원가입 처리
+    registerForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }) // ← 여기 오타 수정
+            });
+
+            if (!res.ok) {
+                const errText = await res.text(); // 서버에서 에러 메시지 받기
+                throw new Error(errText || '회원가입 실패');
+            }
+
+            showMessage('회원가입 성공! 이제 로그인하세요.', false);
+            toggleForms(); // 로그인 폼으로 전환
+        } catch (err) {
+            showMessage(err.message);
+        }
+    });
+</script>
