@@ -156,7 +156,7 @@
             const { token } = data;
             localStorage.setItem('jwt', token);
             showMessage('로그인 성공! JWT를 저장했습니다.', false);
-            window.location.href = '/home'
+            window.location.href = '/home.html'
         } catch (err) {
             showMessage(err.message);
         }

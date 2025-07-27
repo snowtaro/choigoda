@@ -59,7 +59,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/index.html",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico",
-                                "/api/auth/**"
+                                "/api/auth/**","/home","/home.html"
                         ).permitAll()                                      // 이 경로들은 모두 허용
                         .anyRequest().authenticated()                     // 그 외 요청은 인증 필요
                 )

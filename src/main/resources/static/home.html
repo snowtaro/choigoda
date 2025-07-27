@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>홈 화면</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 360px;
+    }
+    h2 {
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .btn {
+      margin-top: 0.75rem;
+      padding: 0.6rem 1rem;
+      width: 100%;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .logout-btn {
+      margin-top: 1.5rem;
+      background: #dc3545;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>홈 화면</h2>
+  <p id="email">이메일: 로딩 중...</p>
+  <p id="message">메시지: 로딩 중...</p>
+
+  <button class="btn" onclick="goToReview()">후기 게시판</button>
+  <button class="btn" onclick="goToChat()">채팅방 리스트</button>
+  <button class="btn" onclick="goToProfile()">개인정보 수정</button>
+
+  <button class="btn logout-btn" onclick="logout()">로그아웃</button>
+</div>
+
+<script>
+  const token = localStorage.getItem("jwt");
+  if (!token) {
+    alert("로그인이 필요합니다.");
+    window.location.href = "/";
+  }
+
+  fetch("/api/home", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  })
+          .then(res => {
+            if (!res.ok) throw new Error("인증 실패 또는 토큰 만료");
+            return res.json();
+          })
+          .then(data => {
+            document.getElementById("email").textContent = "이메일: " + (data.username || data.email);
+            document.getElementById("message").textContent = "메시지: " + data.message;
+          })
+          .catch(err => {
+            alert(err.message);
+            window.location.href = "/";
+          });
+
+  function goToReview() {
+    window.location.href = "/review.html"; // 실제 HTML 경로로 바꿔야 함
+  }
+  function goToChat() {
+    window.location.href = "/chat.html"; // 실제 HTML 경로로 바꿔야 함
+  }
+  function goToProfile() {
+    window.location.href = "/profile.html"; // 실제 HTML 경로로 바꿔야 함
+  }
+
+  function logout() {
+    localStorage.removeItem("jwt");
+    window.location.href = "/";
+  }
+</script>
+</body>
+</html>

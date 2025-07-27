@@ -18,6 +18,6 @@ public class HomeServiceImpl implements HomeService {
     public HomeResponseDto getHomeInfo() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다."));
-        return new HomeResponseDto(username, user.getUsername(), "안녕하세요");
+        return new HomeResponseDto(username, "안녕하세요");
     }
 }
