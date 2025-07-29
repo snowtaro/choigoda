@@ -56,12 +56,10 @@ public class SecurityConfig {
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // 세션 사용 안 함
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/", "/index.html",
-                                "/css/**", "/js/**", "/images/**", "/favicon.ico",
-                                "/api/auth/**","/home","/home.html"
-                        ).permitAll()                                      // 이 경로들은 모두 허용
-                        .anyRequest().authenticated()                     // 그 외 요청은 인증 필요
+                        .requestMatchers("api/auth/**").permitAll() // 로그인, 회원가입은 허용
+                        .requestMatchers("/", "/login","/home","/review","/chat","/profile").permitAll() // view는 허용 
+                        .requestMatchers("/api/**").authenticated() // api 경로는 권한 필요
+                        .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);

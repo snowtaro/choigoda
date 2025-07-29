@@ -49,7 +49,7 @@
 <body>
 <div class="container">
   <h2>홈 화면</h2>
-  <p id="email">이메일: 로딩 중...</p>
+  <p id="name">아이디: 로딩 중...</p>
   <p id="message">메시지: 로딩 중...</p>
 
   <button class="btn" onclick="goToReview()">후기 게시판</button>
@@ -76,7 +76,7 @@
             return res.json();
           })
           .then(data => {
-            document.getElementById("email").textContent = "이메일: " + (data.username || data.email);
+            document.getElementById("name").textContent = "아이디: " + (data.username || data.name);
             document.getElementById("message").textContent = "메시지: " + data.message;
           })
           .catch(err => {
@@ -85,13 +85,13 @@
           });
 
   function goToReview() {
-    window.location.href = "/review.html"; // 실제 HTML 경로로 바꿔야 함
+    window.location.href = "/review";
   }
   function goToChat() {
-    window.location.href = "/chat.html"; // 실제 HTML 경로로 바꿔야 함
+    window.location.href = "/chat";
   }
   function goToProfile() {
-    window.location.href = "/profile.html"; // 실제 HTML 경로로 바꿔야 함
+    window.location.href = "/profile";
   }
 
   function logout() {

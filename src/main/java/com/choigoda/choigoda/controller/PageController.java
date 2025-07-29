@@ -14,4 +14,9 @@ public class PageController {
     public String home() {
         return "home";
     }
+
+    @GetMapping("/profile")
+    public String profile() {
+        return "profile";
+    }
 }
